@@ -131,3 +131,16 @@ print("""
    • "Send your bank details or personal info"
 3️⃣ Such patterns are strong indicators of fake job posts.
 """)
+for max_f in [1000, 5000, 10000]:
+    vectorizer = TfidfVectorizer(stop_words='english', max_features=max_f)
+    X_train_vec = vectorizer.fit_transform(X_train)
+    X_test_vec = vectorizer.transform(X_test)
+
+    model = LogisticRegression(max_iter=1000)
+    model.fit(X_train_vec, y_train)
+    y_pred = model.predict(X_test_vec)
+
+    acc = accuracy_score(y_test, y_pred)
+    print(f"max_features={max_f} → Accuracy: {acc:.4f}")
+
+
