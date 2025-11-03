@@ -1,0 +1,133 @@
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+# ================================
+# STEP 1: Load Dataset
+# ================================
+
+# Replace with your actual CSV file path
+df = pd.read_csv("fake_job_postings.csv")
+
+# Check basic info
+print("Dataset shape:", df.shape)
+print(df.head())
+
+# Replace with actual column names in your dataset
+X = df['description'].fillna('')   # input text
+y = df['fraudulent']               # target (0 = real, 1 = fake)
+
+# Split into training and test data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# ================================
+# STEP 2: Logistic Regression with CountVectorizer (BoW)
+# ================================
+
+bow_vectorizer = CountVectorizer(stop_words='english')
+X_train_bow = bow_vectorizer.fit_transform(X_train)
+X_test_bow = bow_vectorizer.transform(X_test)
+
+bow_model = LogisticRegression(max_iter=1000)
+bow_model.fit(X_train_bow, y_train)
+
+y_pred_bow = bow_model.predict(X_test_bow)
+
+# Evaluate BoW Model
+accuracy_bow = accuracy_score(y_test, y_pred_bow)
+precision_bow = precision_score(y_test, y_pred_bow)
+recall_bow = recall_score(y_test, y_pred_bow)
+f1_bow = f1_score(y_test, y_pred_bow)
+
+print("\n===  BoW Model Performance ===")
+print(f"Accuracy:  {accuracy_bow:.4f}")
+print(f"Precision: {precision_bow:.4f}")
+print(f"Recall:    {recall_bow:.4f}")
+print(f"F1 Score:  {f1_bow:.4f}")
+
+# ================================
+# STEP 3: Logistic Regression with TF-IDF
+# ================================
+
+tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)
+X_test_tfidf = tfidf_vectorizer.transform(X_test)
+
+tfidf_model = LogisticRegression(max_iter=1000)
+tfidf_model.fit(X_train_tfidf, y_train)
+
+y_pred_tfidf = tfidf_model.predict(X_test_tfidf)
+
+# Evaluate TF-IDF Model
+accuracy_tfidf = accuracy_score(y_test, y_pred_tfidf)
+precision_tfidf = precision_score(y_test, y_pred_tfidf)
+recall_tfidf = recall_score(y_test, y_pred_tfidf)
+f1_tfidf = f1_score(y_test, y_pred_tfidf)
+
+print("\n=== 📈 TF-IDF Model Performance ===")
+print(f"Accuracy:  {accuracy_tfidf:.4f}")
+print(f"Precision: {precision_tfidf:.4f}")
+print(f"Recall:    {recall_tfidf:.4f}")
+print(f"F1 Score:  {f1_tfidf:.4f}")
+
+# ================================
+# STEP 4: Model Comparison
+# ================================
+
+print("\n===  Performance Comparison ===")
+comparison = pd.DataFrame({
+    'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
+    'BoW': [accuracy_bow, precision_bow, recall_bow, f1_bow],
+    'TF-IDF': [accuracy_tfidf, precision_tfidf, recall_tfidf, f1_tfidf]
+})
+print(comparison)
+
+# Interpretation
+if accuracy_tfidf > accuracy_bow:
+    print("\n TF-IDF performed better because it captures word importance and reduces weight of common words.")
+else:
+    print("\n BoW performed slightly better — this can happen if dataset is small or not very diverse.")
+
+# ================================
+# Task 2: Model Analysis
+# Predict probabilities and find top 5 suspicious jobs
+# ================================
+
+# Predict probabilities using TF-IDF model
+probs = tfidf_model.predict_proba(X_test_tfidf)[:, 1]
+
+# Create DataFrame to analyze predictions
+results_df = pd.DataFrame({
+    'description': X_test,
+    'actual_label': y_test,
+    'predicted_proba': probs
+})
+
+# Sort by highest fake probability
+top5_fake = results_df.sort_values(by='predicted_proba', ascending=False).head(5)
+
+print("\n=== Top 5 Most Suspicious Job Posts ===")
+for i, row in top5_fake.iterrows():
+    print(f"\n Predicted Fake Probability: {row['predicted_proba']:.2f}")
+    print(f"Job Description Snippet:\n{row['description'][:400]}...")
+    print("------------------------------------------------")
+
+# ================================
+# STEP 5: Observations (to discuss in report)
+# ================================
+
+print("\n Observations:")
+print("""
+1️⃣ TF-IDF usually performs better than BoW because it gives importance to rare but meaningful words.
+2️⃣ The top suspicious jobs often contain phrases like:
+   • "Work from home / No experience needed"
+   • "Immediate payment / Earn $5000 weekly"
+   • "Visa sponsorship / Free registration"
+   • "Send your bank details or personal info"
+3️⃣ Such patterns are strong indicators of fake job posts.
+""")
