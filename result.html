@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Job Prediction Result</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f8fb;
+            text-align: center;
+            padding: 40px;
+        }
+        h2 {
+            color: #0078d7;
+        }
+        progress {
+            width: 60%;
+            height: 25px;
+        }
+        footer {
+            background-color: #0078d7;
+            color: white;
+            padding: 10px;
+            margin-top: 30px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Prediction Result</h2>
+
+    <p><strong>Job Type:</strong> {{ prediction }}</p>
+
+    <p><strong>Confidence Level:</strong> {{ (confidence * 100) | round(2) }}%</p>
+    <progress value="{{ confidence * 100 }}" max="100"></progress>
+
+    <br><br>
+    <a href="/">← Back to Home</a>
+
+    <footer>
+        Developed by <b>Your Name / Team Name</b> | Project: <b>Fake Job Detection</b>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fake Job Detection</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f8fb;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #0078d7;
+        }
+        form {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 60%;
+            margin: auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        textarea {
+            width: 90%;
+            height: 150px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        button {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005fa3;
+        }
+        .tips {
+            background-color: #e9f6ff;
+            border-left: 5px solid #0078d7;
+            width: 60%;
+            margin: 30px auto;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+        }
+        .last-result {
+            width: 60%;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+        }
+        .fake { background-color: #e74c3c; } /* red */
+        .real { background-color: #27ae60; } /* green */
+        .alert {
+            color: white;
+            background-color: #e74c3c;
+            padding: 10px;
+            border-radius: 6px;
+            width: 60%;
+            margin: 10px auto;
+        }
+        footer {
+            margin-top: 40px;
+            background-color: #0078d7;
+            color: white;
+            padding: 10px;
+        }
+    </style>
+    <script>
+        function validateForm() {
+            const text = document.forms["jobForm"]["job_description"].value.trim();
+            if (text === "") {
+                alert("⚠️ Please enter a job description before submitting!");
+                return false;
+            }
+            if (/^[^a-zA-Z]+$/.test(text)) {
+                alert("⚠️ Please enter valid text (not just numbers or symbols)!");
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+<body>
+    <h1>Fake Job Detection System</h1>
+
+    {% if error %}
+        <div class="alert">{{ error }}</div>
+    {% endif %}
+
+    <form name="jobForm" action="/predict" method="post" onsubmit="return validateForm()">
+        <textarea name="job_description" placeholder="Paste job description here..."></textarea><br><br>
+        <button type="submit">Check Job</button>
+    </form>
+
+    <!-- ✅ Last Prediction Result -->
+    {% if last_prediction %}
+    <div class="last-result">
+        <h3>🕒 Last Prediction Result</h3>
+        <p>
+            <strong>Job Type:</strong>
+            <span class="badge {{ 'fake' if last_prediction.prediction == 'Fake' else 'real' }}">
+                {{ last_prediction.prediction }}
+            </span>
+        </p>
+        <p><strong>Confidence:</strong> {{ last_prediction.confidence }}%</p>
+        <progress value="{{ last_prediction.confidence }}" max="100" style="width:80%; height:20px;"></progress>
+    </div>
+    {% endif %}
+
+    <!-- ✅ Tips Section -->
+    <div class="tips">
+        <h3>💡 Tips to Identify Fake Jobs:</h3>
+        <ul>
+            <li>Beware of jobs asking for money upfront.</li>
+            <li>Check the company website and LinkedIn profile.</li>
+            <li>Watch for poor grammar or suspicious emails.</li>
+            <li>Too-good-to-be-true offers are usually fake.</li>
+        </ul>
+    </div>
+
+    <footer>
+        Developed by <b>Your Name / Team Name</b> | Project: <b>Fake Job Detection</b>
+    </footer>
+</body>
+</html>
